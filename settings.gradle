@@ -1,0 +1,2 @@
+include ":QLib"
+project(":QLib").projectDir = file("../QLib")
