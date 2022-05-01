@@ -101,39 +101,44 @@ public class AlchemistCauldronBlockEntity extends BasicBlockEntity {
 
         @Override
         public int fill(FluidStack resource, FluidAction action) {
-            if (!this.fluid.isEmpty() || resource.getAmount() < FluidAttributes.BUCKET_VOLUME) {
+            if (this.fluid.getAmount() >= FluidAttributes.BUCKET_VOLUME || (!this.fluid.isEmpty() && !this.fluid.isFluidEqual(resource))) {
                 return 0;
             }
 
+            int toFill = Math.min(resource.getAmount(), FluidAttributes.BUCKET_VOLUME - this.fluid.getAmount());
             if (action.execute()) {
-                this.fluid = resource.copy();
-                this.fluid.setAmount(FluidAttributes.BUCKET_VOLUME);
+                if (this.fluid.isEmpty()) {
+                    this.fluid = resource.copy();
+                } else {
+                    this.fluid.grow(toFill);
+                }
                 this.onContentsChanged();
             }
 
-            return FluidAttributes.BUCKET_VOLUME;
+            return toFill;
         }
 
         @NotNull
         @Override
         public FluidStack drain(FluidStack resource, FluidAction action) {
-            if (!this.fluid.isFluidEqual(resource)) {
+            if (resource.isEmpty() || this.fluid.isEmpty() || !this.fluid.isFluidEqual(resource)) {
                 return FluidStack.EMPTY;
             }
 
-            return this.drain(FluidAttributes.BUCKET_VOLUME, action);
+            return this.drain(resource.getAmount(), action);
         }
 
         @NotNull
         @Override
         public FluidStack drain(int maxDrain, FluidAction action) {
-            if (this.fluid.isEmpty() || maxDrain < FluidAttributes.BUCKET_VOLUME) {
+            if (this.fluid.isEmpty()) {
                 return FluidStack.EMPTY;
             }
 
             FluidStack toDrain = this.fluid.copy();
+            toDrain.setAmount(Math.min(maxDrain, toDrain.getAmount()));
             if (action.execute()) {
-                this.fluid = FluidStack.EMPTY;
+                this.fluid.shrink(toDrain.getAmount());
                 this.onContentsChanged();
             }
 

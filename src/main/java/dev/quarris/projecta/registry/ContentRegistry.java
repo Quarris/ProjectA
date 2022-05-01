@@ -72,8 +72,6 @@ public class ContentRegistry {
 
     public static class Tags {
 
-        public static final TagKey<Fluid> OVERFLOW_CAULDRON = FluidTags.create(ModRef.res("overflow_cauldron"));
-
     }
 
 }
