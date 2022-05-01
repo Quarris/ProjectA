@@ -107,10 +107,32 @@ minecraft {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
+repositories {
+    maven { // JEI
+        name = "Progwml6 maven"
+        url = "https://dvs1.progwml6.com/files/maven/"
+    }
+    maven { // Fallback
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+    }
+    flatDir {
+        dir 'mods'
+    }
+}
+
 dependencies {
     implementation project(":QLib")
 
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+
+    // Dependencies
+    compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api")
+
+    // Runtime
+    implementation fg.deobf('blank:refinedpipes:0.6.1')
+    implementation fg.deobf('blank:theoneprobe-1.18:5.1.0')
+    runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}")
 }
 
 jar {

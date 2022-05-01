@@ -3,11 +3,14 @@ package dev.quarris.projecta.registry;
 import dev.quarris.projecta.ModRef;
 import dev.quarris.projecta.content.blocks.AlchemistCauldronBlock;
 import dev.quarris.projecta.content.tiles.AlchemistCauldronBlockEntity;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -16,7 +19,7 @@ import net.minecraftforge.registries.RegistryObject;
 import java.util.Arrays;
 import java.util.function.Supplier;
 
-public class Registry {
+public class ContentRegistry {
 
     public static void init(IEventBus bus) {
         Blocks.init(bus);
@@ -65,6 +68,12 @@ public class Registry {
         private static <T extends BlockEntity> RegistryObject<BlockEntityType<T>> register(String name, BlockEntityType.BlockEntitySupplier<T> supp, RegistryObject<Block>... validBlocks) {
             return REGISTRY.register(name, () -> BlockEntityType.Builder.of(supp, Arrays.stream(validBlocks).map(RegistryObject::get).toList().toArray(new Block[0])).build(null));
         }
+    }
+
+    public static class Tags {
+
+        public static final TagKey<Fluid> OVERFLOW_CAULDRON = FluidTags.create(ModRef.res("overflow_cauldron"));
+
     }
 
 }

@@ -1,6 +1,7 @@
 package dev.quarris.projecta.content.blocks;
 
 import dev.quarris.projecta.content.tiles.AlchemistCauldronBlockEntity;
+import dev.quarris.projecta.registry.ContentRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -21,7 +22,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import org.jetbrains.annotations.Nullable;
 import quarris.qlib.api.block.IBlockEntityProvider;
 
@@ -36,8 +36,7 @@ public class AlchemistCauldronBlock extends Block implements EntityBlock, IBlock
 
     @Override
     public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-
-        if (FluidUtil.interactWithFluidHandler(pPlayer, pHand, this.getTile(pLevel, pPos).getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null).orElse(null))) {
+        if (FluidUtil.interactWithFluidHandler(pPlayer, pHand, this.getTile(pLevel, pPos).getFluidStorage())) {
             return InteractionResult.sidedSuccess(pLevel.isClientSide());
         }
 

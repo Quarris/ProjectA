@@ -12,5 +12,6 @@ public class DataGenEvent {
     public static void onDataGather(GatherDataEvent event) {
         event.getGenerator().addProvider(new BlockStateDataHandler(event.getGenerator(), ModRef.ID, event.getExistingFileHelper()));
         event.getGenerator().addProvider(new ItemModelDataHandler(event.getGenerator(), ModRef.ID, event.getExistingFileHelper()));
+        event.getGenerator().addProvider(new FluidTagsDataHandler(event.getGenerator(), ModRef.ID, event.getExistingFileHelper()));
     }
 }

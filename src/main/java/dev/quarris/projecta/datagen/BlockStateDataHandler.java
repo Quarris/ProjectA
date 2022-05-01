@@ -1,7 +1,7 @@
 package dev.quarris.projecta.datagen;
 
 import dev.quarris.projecta.ModRef;
-import dev.quarris.projecta.registry.Registry;
+import dev.quarris.projecta.registry.ContentRegistry;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -14,6 +14,6 @@ public class BlockStateDataHandler extends BlockStateProvider {
 
     @Override
     protected void registerStatesAndModels() {
-        this.simpleBlock(Registry.Blocks.ALCHEMIST_CAULDRON.get(), this.models().getExistingFile(ModRef.res("block/alchemist_cauldron")));
+        this.simpleBlock(ContentRegistry.Blocks.ALCHEMIST_CAULDRON.get(), this.models().getExistingFile(ModRef.res("block/alchemist_cauldron")));
     }
 }
