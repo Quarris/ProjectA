@@ -1,7 +1,7 @@
 package dev.quarris.projecta.datagen;
 
 import dev.quarris.projecta.ModRef;
-import dev.quarris.projecta.registry.ContentRegistry;
+import dev.quarris.projecta.registry.Content;
 import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.TagsProvider;
@@ -18,7 +18,7 @@ public class FluidTagsDataHandler extends TagsProvider<Fluid> {
 
     @Override
     protected void addTags() {
-        this.tag(ContentRegistry.Tags.Fluids.HEAT_SOURCE).addTags(FluidTags.LAVA);
+        this.tag(Content.TAGS.fluids.heatSource).addTags(FluidTags.LAVA);
     }
 
     @Override

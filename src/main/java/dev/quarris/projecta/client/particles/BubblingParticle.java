@@ -29,8 +29,6 @@ public class BubblingParticle extends TextureSheetParticle {
         this.setColor(r, g, b);
         this.setAlpha(a);
         this.hasPhysics = false;
-        this.roll = (float)Math.random() * ((float)Math.PI * 2F);
-        this.oRoll = this.roll;
     }
 
     @Override

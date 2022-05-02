@@ -2,9 +2,10 @@ package dev.quarris.projecta.content.tiles;
 
 import com.mojang.math.Vector3d;
 import dev.quarris.projecta.content.particles.BubblingParticleOptions;
-import dev.quarris.projecta.registry.ContentRegistry;
+import dev.quarris.projecta.registry.Content;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -21,15 +22,15 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.NotNull;
 import quarris.qlib.api.block.tile.BasicBlockEntity;
 
-public class AlchemistCauldronBlockEntity extends BasicBlockEntity {
+public class AlchemicalCauldronBlockEntity extends BasicBlockEntity {
 
     private CauldronFluidHandler fluidStorage = new CauldronFluidHandler();
     private int externalHeat;
 
     private final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> this.fluidStorage);
 
-    public AlchemistCauldronBlockEntity(BlockPos pWorldPosition, BlockState pBlockState) {
-        super(ContentRegistry.BlockEntityTypes.ALCHEMIST_CAULDRON.get(), pWorldPosition, pBlockState);
+    public AlchemicalCauldronBlockEntity(BlockPos pWorldPosition, BlockState pBlockState) {
+        super(Content.BLOCK_ENTITY_TYPES.alchemicalCauldron.get(), pWorldPosition, pBlockState);
     }
 
     public void tick() {
@@ -45,7 +46,7 @@ public class AlchemistCauldronBlockEntity extends BasicBlockEntity {
             Fluid fluid = this.level.getFluidState(below).getType();
             int fluidTemp = fluid.getAttributes().getTemperature();
             this.externalHeat = (int) Mth.approach(this.externalHeat, fluidTemp, 3);
-        } else if (this.level.getBlockState(below).is(ContentRegistry.Tags.Blocks.HEAT_SOURCE)) {
+        } else if (this.level.getBlockState(below).is(Content.TAGS.blocks.heatSource)) {
             this.externalHeat = (int) Mth.approach(this.externalHeat, 1000, 3);
         }
     }
@@ -54,8 +55,8 @@ public class AlchemistCauldronBlockEntity extends BasicBlockEntity {
         if (!this.level.isClientSide()) {
             ServerLevel level = (ServerLevel) this.level;
             BlockPos pos = this.getBlockPos();
-            Vector3d center = new Vector3d(pos.getX() + 0.5, pos.getY() + 12.5/16, pos.getZ() + 0.5);
-            level.sendParticles(new BubblingParticleOptions(this.getFluid().getFluid().getAttributes().getColor(this.getFluid())), center.x, center.y, center.z, 1, 0.125, 0.05, 0.125, 0.00001);
+            Vector3d center = new Vector3d(pos.getX() + 0.5, pos.getY() + 10.5/16, pos.getZ() + 0.5);
+            level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, this.getFluid().getFluid().defaultFluidState().createLegacyBlock()), center.x, center.y, center.z, 1, 0.125, 0.01, 0.125, 0);
         }
     }
 
@@ -149,7 +150,7 @@ public class AlchemistCauldronBlockEntity extends BasicBlockEntity {
             if (action.execute()) {
                 if (this.fluid.isEmpty()) {
                     this.fluid = resource.copy();
-                    AlchemistCauldronBlockEntity.this.averageOutHeatLevel();
+                    AlchemicalCauldronBlockEntity.this.averageOutHeatLevel();
                 } else {
                     this.fluid.grow(toFill);
                 }
@@ -187,7 +188,7 @@ public class AlchemistCauldronBlockEntity extends BasicBlockEntity {
         }
 
         private void onContentsChanged() {
-            AlchemistCauldronBlockEntity.this.sendToClients();
+            AlchemicalCauldronBlockEntity.this.sendToClients();
         }
 
         @Override

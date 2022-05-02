@@ -13,6 +13,7 @@ public class ItemModelDataHandler extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
+
         this.withExistingParent("alchemist_cauldron", ModRef.res("block/alchemist_cauldron"));
     }
 }

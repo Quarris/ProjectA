@@ -1,6 +1,6 @@
 package dev.quarris.projecta;
 
-import dev.quarris.projecta.registry.ContentRegistry;
+import dev.quarris.projecta.registry.Content;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
@@ -8,6 +8,6 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class ModRoot {
 
     public ModRoot() {
-        ContentRegistry.init(FMLJavaModLoadingContext.get().getModEventBus());
+        Content.init(FMLJavaModLoadingContext.get().getModEventBus());
     }
 }

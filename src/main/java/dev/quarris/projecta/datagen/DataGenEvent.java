@@ -5,6 +5,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 
+import java.util.Locale;
+
 @Mod.EventBusSubscriber(modid = ModRef.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class DataGenEvent {
 
@@ -14,5 +16,6 @@ public class DataGenEvent {
         event.getGenerator().addProvider(new ItemModelDataHandler(event.getGenerator(), ModRef.ID, event.getExistingFileHelper()));
         event.getGenerator().addProvider(new BlockTagsDataHandler(event.getGenerator(), ModRef.ID, event.getExistingFileHelper()));
         event.getGenerator().addProvider(new FluidTagsDataHandler(event.getGenerator(), ModRef.ID, event.getExistingFileHelper()));
+        event.getGenerator().addProvider(new LanguageDataHandler(event.getGenerator(), ModRef.ID, "en_us"));
     }
 }

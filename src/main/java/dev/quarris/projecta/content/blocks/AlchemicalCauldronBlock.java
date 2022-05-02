@@ -1,16 +1,16 @@
 package dev.quarris.projecta.content.blocks;
 
-import dev.quarris.projecta.content.tiles.AlchemistCauldronBlockEntity;
-import dev.quarris.projecta.registry.ContentRegistry;
+import dev.quarris.projecta.ModRef;
+import dev.quarris.projecta.content.tiles.AlchemicalCauldronBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -24,13 +24,14 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.fluids.FluidUtil;
 import org.jetbrains.annotations.Nullable;
 import quarris.qlib.api.block.IBlockEntityProvider;
+import quarris.qlib.api.registry.components.block.IOverrideItemProperties;
 
-public class AlchemistCauldronBlock extends Block implements EntityBlock, IBlockEntityProvider<AlchemistCauldronBlockEntity> {
+public class AlchemicalCauldronBlock extends Block implements IBlockEntityProvider<AlchemicalCauldronBlockEntity>, IOverrideItemProperties {
 
     private static final VoxelShape SHAPE = makeShape();
     private static final VoxelShape OUTER_SHAPE = Shapes.or(SHAPE, Shapes.box(1 / 16d, 1 / 16d, 1 / 16d, 15 / 16d, 16 / 16d, 15 / 16d));
 
-    public AlchemistCauldronBlock() {
+    public AlchemicalCauldronBlock() {
         super(Properties.copy(Blocks.CAULDRON));
     }
 
@@ -46,23 +47,28 @@ public class AlchemistCauldronBlock extends Block implements EntityBlock, IBlock
     @Nullable
     @Override
     public <T extends BlockEntity> GameEventListener getListener(Level pLevel, T pBlockEntity) {
-        return EntityBlock.super.getListener(pLevel, pBlockEntity);
+        return null;
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level pLevel, BlockState pState, BlockEntityType<T> pBlockEntityType) {
         return (level, pos, state, tile) -> {
-            if (tile instanceof AlchemistCauldronBlockEntity) {
-                ((AlchemistCauldronBlockEntity) tile).tick();
+            if (tile instanceof AlchemicalCauldronBlockEntity) {
+                ((AlchemicalCauldronBlockEntity) tile).tick();
             }
         };
+    }
+
+    @Override
+    public void override(Item.Properties properties) {
+        properties.tab(ModRef.TAB);
     }
 
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
-        return new AlchemistCauldronBlockEntity(pPos, pState);
+        return new AlchemicalCauldronBlockEntity(pPos, pState);
     }
 
     @Override

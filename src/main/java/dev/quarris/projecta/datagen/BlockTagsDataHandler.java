@@ -1,7 +1,7 @@
 package dev.quarris.projecta.datagen;
 
 import dev.quarris.projecta.ModRef;
-import dev.quarris.projecta.registry.ContentRegistry;
+import dev.quarris.projecta.registry.Content;
 import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.TagsProvider;
@@ -18,7 +18,7 @@ public class BlockTagsDataHandler extends TagsProvider<Block> {
 
     @Override
     protected void addTags() {
-        this.tag(ContentRegistry.Tags.Blocks.HEAT_SOURCE).addTags(BlockTags.FIRE, BlockTags.CAMPFIRES);
+        this.tag(Content.TAGS.blocks.heatSource).addTags(BlockTags.FIRE, BlockTags.CAMPFIRES);
     }
 
     @Override

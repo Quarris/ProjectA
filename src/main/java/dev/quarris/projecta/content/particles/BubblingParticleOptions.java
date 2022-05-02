@@ -3,7 +3,7 @@ package dev.quarris.projecta.content.particles;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
-import dev.quarris.projecta.registry.ContentRegistry;
+import dev.quarris.projecta.registry.Content;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.network.FriendlyByteBuf;
@@ -35,7 +35,7 @@ public class BubblingParticleOptions implements ParticleOptions {
 
     @Override
     public ParticleType<?> getType() {
-        return ContentRegistry.ParticleTypes.BUBBLING.get();
+        return Content.PARTICLE_TYPES.bubbling.get();
     }
 
     @Override
