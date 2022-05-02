@@ -1,8 +1,14 @@
 package dev.quarris.projecta.registry;
 
+import com.mojang.serialization.Codec;
 import dev.quarris.projecta.ModRef;
 import dev.quarris.projecta.content.blocks.AlchemistCauldronBlock;
+import dev.quarris.projecta.content.particles.BubblingParticleOptions;
 import dev.quarris.projecta.content.tiles.AlchemistCauldronBlockEntity;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
@@ -15,8 +21,10 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import quarris.qlib.api.registry.registry.BlockRegistry;
 
 import java.util.Arrays;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ContentRegistry {
@@ -25,14 +33,17 @@ public class ContentRegistry {
         Blocks.init(bus);
         Items.init(bus);
         BlockEntityTypes.init(bus);
+        Tags.init();
+        ParticleTypes.init(bus);
     }
 
+    @BlockRegistry(ModRef.ID)
     public static class Blocks {
         private static final DeferredRegister<Block> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCKS, ModRef.ID);
 
         public static final RegistryObject<Block> ALCHEMIST_CAULDRON = register("alchemist_cauldron", AlchemistCauldronBlock::new);
 
-        private static void init(IEventBus bus) {
+        static void init(IEventBus bus) {
             REGISTRY.register(bus);
         }
 
@@ -46,7 +57,7 @@ public class ContentRegistry {
 
         public static final RegistryObject<Item> ALCHEMIST_CAULDRON = register("alchemist_cauldron", () -> new BlockItem(Blocks.ALCHEMIST_CAULDRON.get(), new Item.Properties().tab(ModRef.TAB)));
 
-        private static void init(IEventBus bus) {
+        static void init(IEventBus bus) {
             REGISTRY.register(bus);
         }
 
@@ -61,7 +72,7 @@ public class ContentRegistry {
         public static final RegistryObject<BlockEntityType<AlchemistCauldronBlockEntity>> ALCHEMIST_CAULDRON =
                 register("alchemist_cauldron", AlchemistCauldronBlockEntity::new, Blocks.ALCHEMIST_CAULDRON);
 
-        private static void init(IEventBus bus) {
+        static void init(IEventBus bus) {
             REGISTRY.register(bus);
         }
 
@@ -72,6 +83,53 @@ public class ContentRegistry {
 
     public static class Tags {
 
+        static void init() {
+            Blocks.init();
+            Fluids.init();
+        }
+
+        public static class Blocks {
+            static void init() {}
+
+            public static final TagKey<Block> HEAT_SOURCE = create("heat_source");
+
+            private static TagKey<Block> create(String name) {
+                return BlockTags.create(ModRef.res(name));
+            }
+        }
+
+        public static class Fluids {
+            static void init() {}
+
+            public static final TagKey<Fluid> HEAT_SOURCE = create("heat_source");
+
+            private static TagKey<Fluid> create(String name) {
+                return FluidTags.create(ModRef.res(name));
+            }
+        }
+    }
+
+    public static class ParticleTypes {
+        private static final DeferredRegister<ParticleType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, ModRef.ID);
+
+        public static final RegistryObject<ParticleType<BubblingParticleOptions>> BUBBLING = register("bubbling", false, BubblingParticleOptions.DESERIALIZER, BubblingParticleOptions::codec);
+
+        static void init(IEventBus bus) {
+            REGISTRY.register(bus);
+        }
+
+        private static RegistryObject<? extends SimpleParticleType> register(String name, boolean overrideLimiter) {
+            return REGISTRY.register(name, () -> new SimpleParticleType(overrideLimiter));
+        }
+
+        private static <O extends ParticleOptions> RegistryObject<ParticleType<O>> register(String name, boolean overrideLimiter, ParticleOptions.Deserializer<O> deserializer, Function<ParticleType<O>, Codec<O>> codec) {
+            return REGISTRY.register(name, () -> new ParticleType<>(overrideLimiter, deserializer) {
+                @Override
+                public Codec<O> codec() {
+                    return codec.apply(this);
+                }
+            });
+        }
     }
 
 }

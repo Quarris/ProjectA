@@ -1,31 +1,30 @@
 package dev.quarris.projecta.content.tiles;
 
+import com.mojang.math.Vector3d;
+import dev.quarris.projecta.content.particles.BubblingParticleOptions;
 import dev.quarris.projecta.registry.ContentRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.wrappers.FluidBucketWrapper;
 import org.jetbrains.annotations.NotNull;
 import quarris.qlib.api.block.tile.BasicBlockEntity;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class AlchemistCauldronBlockEntity extends BasicBlockEntity {
 
     private CauldronFluidHandler fluidStorage = new CauldronFluidHandler();
+    private int externalHeat;
 
     private final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> this.fluidStorage);
 
@@ -34,7 +33,42 @@ public class AlchemistCauldronBlockEntity extends BasicBlockEntity {
     }
 
     public void tick() {
+        BlockPos below = this.getBlockPos().below();
+        this.doHeatTick(below);
+        if (this.level.getGameTime() % 2 == 0 && this.isHeated() && this.getFluid().getAmount() >= FluidAttributes.BUCKET_VOLUME) {
+            this.doBubbleEffect();
+        }
+    }
 
+    private void doHeatTick(BlockPos below) {
+        if (this.level.isFluidAtPosition(below, state -> !state.isEmpty())) {
+            Fluid fluid = this.level.getFluidState(below).getType();
+            int fluidTemp = fluid.getAttributes().getTemperature();
+            this.externalHeat = (int) Mth.approach(this.externalHeat, fluidTemp, 3);
+        } else if (this.level.getBlockState(below).is(ContentRegistry.Tags.Blocks.HEAT_SOURCE)) {
+            this.externalHeat = (int) Mth.approach(this.externalHeat, 1000, 3);
+        }
+    }
+
+    private void doBubbleEffect() {
+        if (!this.level.isClientSide()) {
+            ServerLevel level = (ServerLevel) this.level;
+            BlockPos pos = this.getBlockPos();
+            Vector3d center = new Vector3d(pos.getX() + 0.5, pos.getY() + 12.5/16, pos.getZ() + 0.5);
+            level.sendParticles(new BubblingParticleOptions(this.getFluid().getFluid().getAttributes().getColor(this.getFluid())), center.x, center.y, center.z, 1, 0.125, 0.05, 0.125, 0.00001);
+        }
+    }
+
+    public int getHeatLevel() {
+        return Math.max(this.externalHeat, this.getFluidTemperature());
+    }
+
+    private void averageOutHeatLevel() {
+        this.externalHeat = (int) Mth.lerp(0.5, this.getFluidTemperature(), this.externalHeat);
+    }
+
+    public boolean isHeated() {
+        return this.getHeatLevel() >= 1000;
     }
 
     public FluidStack getFluid() {
@@ -45,16 +79,22 @@ public class AlchemistCauldronBlockEntity extends BasicBlockEntity {
         return this.fluidStorage;
     }
 
+    private int getFluidTemperature() {
+        return this.getFluid().getFluid().getAttributes().getTemperature(this.getFluid());
+    }
+
     @Override
     protected void saveAdditional(CompoundTag pTag) {
         super.saveAdditional(pTag);
         pTag.put("Fluid", this.fluidStorage.serializeNBT());
+        pTag.putInt("Heat", this.externalHeat);
     }
 
     @Override
     public void load(CompoundTag pTag) {
         super.load(pTag);
         this.fluidStorage.deserializeNBT(pTag.getCompound("Fluid"));
+        this.externalHeat = pTag.getInt("Heat");
     }
 
     @NotNull
@@ -109,6 +149,7 @@ public class AlchemistCauldronBlockEntity extends BasicBlockEntity {
             if (action.execute()) {
                 if (this.fluid.isEmpty()) {
                     this.fluid = resource.copy();
+                    AlchemistCauldronBlockEntity.this.averageOutHeatLevel();
                 } else {
                     this.fluid.grow(toFill);
                 }
