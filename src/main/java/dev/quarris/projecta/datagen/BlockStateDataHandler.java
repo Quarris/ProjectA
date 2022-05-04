@@ -14,6 +14,6 @@ public class BlockStateDataHandler extends BlockStateProvider {
 
     @Override
     protected void registerStatesAndModels() {
-        this.simpleBlock(Content.BLOCKS.alchemicalCauldron.get(), this.models().getExistingFile(ModRef.res("block/alchemist_cauldron")));
+        this.simpleBlock(Content.BLOCKS.alchemicalCauldron.get(), this.models().getExistingFile(ModRef.res("block/alchemical_cauldron")));
     }
 }

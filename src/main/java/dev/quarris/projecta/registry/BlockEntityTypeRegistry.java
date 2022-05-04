@@ -1,6 +1,6 @@
 package dev.quarris.projecta.registry;
 
-import dev.quarris.projecta.content.tiles.AlchemicalCauldronBlockEntity;
+import dev.quarris.projecta.content.tile.AlchemicalCauldronBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryObject;

@@ -1,6 +1,6 @@
 package dev.quarris.projecta.registry;
 
-import dev.quarris.projecta.content.particles.BubblingParticleOptions;
+import dev.quarris.projecta.content.particle.BubblingParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryObject;

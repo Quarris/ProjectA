@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "projecta:block/alchemist_cauldron"
+      "model": "projecta:block/alchemical_cauldron"
     }
   }
 }

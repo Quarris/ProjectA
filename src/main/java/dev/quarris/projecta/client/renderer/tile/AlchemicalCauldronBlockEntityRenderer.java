@@ -2,7 +2,7 @@ package dev.quarris.projecta.client.renderer.tile;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3d;
-import dev.quarris.projecta.content.tiles.AlchemicalCauldronBlockEntity;
+import dev.quarris.projecta.content.tile.AlchemicalCauldronBlockEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -24,8 +24,8 @@ public class AlchemicalCauldronBlockEntityRenderer implements BlockEntityRendere
         if (!fluid.isEmpty()) {
             matrix.pushPose();
             BlockPos pos = cauldron.getBlockPos();
-            float fill = cauldron.getFill();
-            FluidRenderer.renderFluidFace(cauldron.getLevel(), pos, matrix, fluid, pBufferSource.getBuffer(RenderType.text(InventoryMenu.BLOCK_ATLAS)), Direction.UP, new Vector3d(0.5, 2.01 / 16 + (10.0 / 16) * fill, 0.5), 7 / 16f, pPackedLight);
+            //float fill = cauldron.getFill();
+            FluidRenderer.renderFluidFace(cauldron.getLevel(), pos, matrix, fluid, pBufferSource.getBuffer(RenderType.text(InventoryMenu.BLOCK_ATLAS)), Direction.UP, new Vector3d(0.5, 12.01 / 16, 0.5), 7 / 16f, pPackedLight);
             matrix.popPose();
         }
     }

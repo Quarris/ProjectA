@@ -1,44 +1,123 @@
-package dev.quarris.projecta.content.tiles;
+package dev.quarris.projecta.content.tile;
 
 import com.mojang.math.Vector3d;
-import dev.quarris.projecta.content.particles.BubblingParticleOptions;
+import dev.quarris.projecta.content.recipe.AlchemicalBrewingRecipe;
 import dev.quarris.projecta.registry.Content;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.common.capabilities.Capability;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.NotNull;
-import quarris.qlib.api.block.tile.BasicBlockEntity;
+import quarris.qlib.api.content.block.tile.BasicBlockEntity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AlchemicalCauldronBlockEntity extends BasicBlockEntity {
 
+
+    private List<AlchemicalBrewingRecipe> matchingRecipes;
+    private List<StirStep> stirs = new ArrayList<>();
+    private boolean isInvalidRecipe;
+
+    private List<ItemStack> contents = new ArrayList<>();
     private CauldronFluidHandler fluidStorage = new CauldronFluidHandler();
     private int externalHeat;
 
-    private final LazyOptional<IFluidHandler> holder = LazyOptional.of(() -> this.fluidStorage);
+    private final AABB brewArea;
 
     public AlchemicalCauldronBlockEntity(BlockPos pWorldPosition, BlockState pBlockState) {
         super(Content.BLOCK_ENTITY_TYPES.alchemicalCauldron.get(), pWorldPosition, pBlockState);
+        this.brewArea = new AABB(2.0 / 16, 2.0 / 16, 2.0 / 16, 14.0 / 16, 12.0 / 16, 14.0 / 16).move(pWorldPosition);
     }
 
     public void tick() {
         BlockPos below = this.getBlockPos().below();
         this.doHeatTick(below);
-        if (this.level.getGameTime() % 2 == 0 && this.isHeated() && this.getFluid().getAmount() >= FluidAttributes.BUCKET_VOLUME) {
+        if (this.level.getGameTime() % 2 == 0 && this.isHeated() && !this.getFluid().isEmpty()) {
             this.doBubbleEffect();
+            this.checkForItems();
         }
+    }
+
+    private void checkForItems() {
+        this.level.getEntities(EntityType.ITEM, this.brewArea, e -> true)
+                .forEach(itemEntity -> {
+                    this.contents.add(itemEntity.getItem());
+                    itemEntity.discard();
+                });
+    }
+
+    public void stir() {
+        if (this.getFluid().isEmpty()) {
+            return;
+        }
+
+        StirStep step = new StirStep(new ArrayList<>(this.contents));
+        int stepNumber = this.stirs.size();
+
+        if (this.stirs.isEmpty()) {
+            this.matchingRecipes = this.getValidRecipes();
+            this.isInvalidRecipe = false;
+        }
+
+        this.stirs.add(step);
+        this.contents.clear();
+
+        if (this.isInvalidRecipe) {
+            return;
+        }
+
+        this.matchingRecipes.removeIf(recipe -> !recipe.matchesAtStep(step.items, stepNumber));
+        boolean completed = this.matchingRecipes.stream()
+                .filter(recipe -> recipe.isFinalStep(stepNumber))
+                .findFirst()
+                .map(recipe -> {
+                    this.finalizeRecipe(recipe.getFluidOutput(), recipe.getOutputs());
+                    return true;
+                }).orElse(false);
+
+        if (completed) {
+            return;
+        }
+
+        if (this.matchingRecipes.isEmpty()) {
+            this.isInvalidRecipe = true;
+        }
+    }
+
+    private void finalizeRecipe(FluidStack fluid, List<ItemStack> outputs) {
+        if (this.level.isClientSide()) {
+            return;
+        }
+
+        this.fluidStorage.setFluid(fluid.copy());
+        BlockPos pos = this.getBlockPos();
+        for (ItemStack output : outputs) {
+            this.level.addFreshEntity(new ItemEntity(this.level, pos.getX(), pos.getY() + 1, pos.getZ(), output.copy()));
+        }
+
+        this.stirs.clear();
+        this.sendToClients();
+    }
+
+    private List<AlchemicalBrewingRecipe> getValidRecipes() {
+        return this.level.getRecipeManager().getAllRecipesFor(Content.RECIPE_TYPES.alchemicalBrewingType).stream()
+                .filter(recipe -> recipe.isValid(this.isSuperHeated(), this.getFluid()))
+                .collect(Collectors.toList());
     }
 
     private void doHeatTick(BlockPos below) {
@@ -55,7 +134,7 @@ public class AlchemicalCauldronBlockEntity extends BasicBlockEntity {
         if (!this.level.isClientSide()) {
             ServerLevel level = (ServerLevel) this.level;
             BlockPos pos = this.getBlockPos();
-            Vector3d center = new Vector3d(pos.getX() + 0.5, pos.getY() + 10.5/16, pos.getZ() + 0.5);
+            Vector3d center = new Vector3d(pos.getX() + 0.5, pos.getY() + 10.5 / 16, pos.getZ() + 0.5);
             level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, this.getFluid().getFluid().defaultFluidState().createLegacyBlock()), center.x, center.y, center.z, 1, 0.125, 0.01, 0.125, 0);
         }
     }
@@ -70,6 +149,10 @@ public class AlchemicalCauldronBlockEntity extends BasicBlockEntity {
 
     public boolean isHeated() {
         return this.getHeatLevel() >= 1000;
+    }
+
+    public boolean isSuperHeated() {
+        return this.getHeatLevel() >= 2000;
     }
 
     public FluidStack getFluid() {
@@ -98,17 +181,7 @@ public class AlchemicalCauldronBlockEntity extends BasicBlockEntity {
         this.externalHeat = pTag.getInt("Heat");
     }
 
-    @NotNull
-    @Override
-    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, Direction side) {
-        if (cap == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) {
-            return this.holder.cast();
-        }
-        return super.getCapability(cap, side);
-    }
-
-    public float getFill() {
-        return Mth.clamp(this.getFluid().getAmount() / (float) FluidAttributes.BUCKET_VOLUME, 0, 1);
+    public record StirStep(List<ItemStack> items) {
     }
 
     public class CauldronFluidHandler implements IFluidHandler, INBTSerializable<CompoundTag> {
@@ -142,22 +215,17 @@ public class AlchemicalCauldronBlockEntity extends BasicBlockEntity {
 
         @Override
         public int fill(FluidStack resource, FluidAction action) {
-            if (this.fluid.getAmount() >= FluidAttributes.BUCKET_VOLUME || (!this.fluid.isEmpty() && !this.fluid.isFluidEqual(resource))) {
+            if (!this.fluid.isEmpty() || resource.getAmount() < FluidAttributes.BUCKET_VOLUME) {
                 return 0;
             }
 
-            int toFill = Math.min(resource.getAmount(), FluidAttributes.BUCKET_VOLUME - this.fluid.getAmount());
             if (action.execute()) {
-                if (this.fluid.isEmpty()) {
-                    this.fluid = resource.copy();
-                    AlchemicalCauldronBlockEntity.this.averageOutHeatLevel();
-                } else {
-                    this.fluid.grow(toFill);
-                }
+                this.fluid = resource.copy();
+                this.fluid.setAmount(FluidAttributes.BUCKET_VOLUME);
                 this.onContentsChanged();
             }
 
-            return toFill;
+            return FluidAttributes.BUCKET_VOLUME;
         }
 
         @NotNull
@@ -173,14 +241,13 @@ public class AlchemicalCauldronBlockEntity extends BasicBlockEntity {
         @NotNull
         @Override
         public FluidStack drain(int maxDrain, FluidAction action) {
-            if (this.fluid.isEmpty()) {
+            if (this.fluid.isEmpty() || maxDrain < FluidAttributes.BUCKET_VOLUME) {
                 return FluidStack.EMPTY;
             }
 
             FluidStack toDrain = this.fluid.copy();
-            toDrain.setAmount(Math.min(maxDrain, toDrain.getAmount()));
             if (action.execute()) {
-                this.fluid.shrink(toDrain.getAmount());
+                this.fluid = FluidStack.EMPTY;
                 this.onContentsChanged();
             }
 
@@ -189,6 +256,7 @@ public class AlchemicalCauldronBlockEntity extends BasicBlockEntity {
 
         private void onContentsChanged() {
             AlchemicalCauldronBlockEntity.this.sendToClients();
+            AlchemicalCauldronBlockEntity.this.averageOutHeatLevel();
         }
 
         @Override
@@ -201,6 +269,10 @@ public class AlchemicalCauldronBlockEntity extends BasicBlockEntity {
         @Override
         public void deserializeNBT(CompoundTag nbt) {
             this.fluid = FluidStack.loadFluidStackFromNBT(nbt);
+        }
+
+        public void setFluid(FluidStack fluid) {
+            this.fluid = fluid;
         }
     }
 }

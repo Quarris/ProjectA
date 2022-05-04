@@ -1,4 +1,4 @@
-package dev.quarris.projecta.events;
+package dev.quarris.projecta.event;
 
 import dev.quarris.projecta.ModRef;
 import net.minecraftforge.fml.common.Mod;

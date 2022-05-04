@@ -1,6 +1,6 @@
 package dev.quarris.projecta.registry;
 
-import dev.quarris.projecta.content.blocks.AlchemicalCauldronBlock;
+import dev.quarris.projecta.content.block.AlchemicalCauldronBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryObject;

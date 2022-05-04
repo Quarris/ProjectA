@@ -1,4 +1,4 @@
-package dev.quarris.projecta.content.particles;
+package dev.quarris.projecta.content.particle;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;

@@ -1,6 +1,6 @@
 package dev.quarris.projecta.client.particles;
 
-import dev.quarris.projecta.content.particles.BubblingParticleOptions;
+import dev.quarris.projecta.content.particle.BubblingParticleOptions;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import org.jetbrains.annotations.Nullable;

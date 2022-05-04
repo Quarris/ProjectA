@@ -1,0 +1,30 @@
+{
+  "type": "projecta:alchemical_brewing",
+  "fluid": "minecraft:water",
+  "steps": [
+    {
+      "ingredients": [
+        {
+          "item": "minecraft:redstone"
+        }
+      ]
+    },
+    {
+      "ingredients": [
+        {
+          "item": "minecraft:yellow_dye"
+        }
+      ]
+    }
+  ],
+  "fluidOutput": "minecraft:lava",
+  "outputs": [
+    {
+      "item": "minecraft:glowstone_dust",
+      "count": 2
+    },
+    {
+      "item": "minecraft:white_dye"
+    }
+  ]
+}
